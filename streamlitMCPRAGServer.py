@@ -2,13 +2,19 @@ import streamlit as st
 import os
 import threading
 import asyncio
-from langchain_openai import AzureChatOpenAI, AzureOpenAIEmbeddings
+from langchain_openai import AzureChatOpenAI, AzureOpenAIEmbeddings,AzureOpenAI
 from langchain.vectorstores.pgvector import PGVector
 from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.agents import initialize_agent, Tool
+from langchain_core.rate_limiters     import InMemoryRateLimiter
 from fastmcp import FastMCP
 
+rate_limiter = InMemoryRateLimiter(
+    requests_per_second=1,  # <-- Can only make a request once every 10 seconds!!
+    check_every_n_seconds=0.1,  # Wake up every 100 ms to check whether allowed to make a request,
+    max_bucket_size=10,  # Controls the maximum burst size.
+)
 
 
 # ==== Azure OpenAI Configuration ====
@@ -45,23 +51,30 @@ if uploaded_files:
     st.success(f"Loaded {len(docs)} pages.")
 
     # Chunking for large files
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=200)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=9000, chunk_overlap=200)
     chunks = splitter.split_documents(docs)
     st.session_state["chunks"] = chunks
     st.info(f"Chunked into {len(chunks)} segments.")
+    
+    embeddings_endpoint = "https://chatdrl-gpt.openai.azure.com/"
+    embeddings_model_name = "text-embedding-3-large"
+    embeddingsDeployment = "text-embedding-3-large"
+    embeddings_api_key = "BU21ep2zab4JWbBEUOstRuNiz5vVb4IJO0VFsdnqtW0hb2UX5TokJQQJ99BAACHYHv6XJ3w3AAABACOGCIXn"
+    embeddings_api_version = "2024-02-01"
 
     # Embeddings and vectorstore (Azure OpenAI)
     embeddings = AzureOpenAIEmbeddings(
-        azure_deployment=AZURE_OPENAI_DEPLOYMENT_NAME,
-        api_key=AZURE_OPENAI_API_KEY,
-        azure_endpoint=AZURE_OPENAI_ENDPOINT,
-        api_version=AZURE_OPENAI_API_VERSION,
+        azure_deployment=embeddingsDeployment,
+        api_key=embeddings_api_key,
+        azure_endpoint=embeddings_endpoint,
+        api_version=embeddings_api_version,
     )
     vectorstore = PGVector.from_documents(
         documents=chunks,
         embedding=embeddings,
         connection_string=PGVECTOR_CONN,
         collection_name=COLLECTION_NAME,
+        
     )
     st.session_state["vectorstore"] = vectorstore
     st.success("Documents embedded and stored.")
@@ -81,8 +94,11 @@ llm = AzureChatOpenAI(
     api_key=AZURE_OPENAI_API_KEY,
     azure_endpoint=AZURE_OPENAI_ENDPOINT,
     api_version=AZURE_OPENAI_API_VERSION,
+    rate_limiter=rate_limiter,
     temperature=0,
 )
+
+
 agent = initialize_agent(tools, llm, verbose=True)
 
 user_query = st.text_input("Ask a question about the PDFs:")
