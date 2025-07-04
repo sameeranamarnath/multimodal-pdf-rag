@@ -51,7 +51,7 @@ if uploaded_files:
     st.success(f"Loaded {len(docs)} pages.")
 
     # Chunking for large files
-    splitter = RecursiveCharacterTextSplitter(chunk_size=9000, chunk_overlap=200)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=4500, chunk_overlap=200)
     chunks = splitter.split_documents(docs)
     st.session_state["chunks"] = chunks
     st.info(f"Chunked into {len(chunks)} segments.")
