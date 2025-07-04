@@ -7,18 +7,18 @@ from langchain.vectorstores.pgvector import PGVector
 from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.agents import initialize_agent, Tool
-from langchain_mcp_adapters.server import MCPServer
-from langchain_mcp_adapters.tools import expose_tool
+from fastmcp import FastMCP
+
+
 
 # ==== Azure OpenAI Configuration ====
-AZURE_OPENAI_API_KEY = "tAdu1c7p9SoqsbebADoeHgyDNBayy9olnbjsU4TXCLHSY7JkSJSGJQQJ99BCACYeBjFXJ3w3AAAAACOGUhR3"
-AZURE_OPENAI_ENDPOINT = "https://aifoundrysuppo8052930280.openai.azure.com/"
+AZURE_OPENAI_API_KEY = "BU21ep2zab4JWbBEUOstRuNiz5vVb4IJO0VFsdnqtW0hb2UX5TokJQQJ99BAACHYHv6XJ3w3AAABACOGCIXn"
+AZURE_OPENAI_ENDPOINT = "https://chatdrl-gpt.openai.azure.com/"
 AZURE_OPENAI_DEPLOYMENT_NAME = "gpt-4.1"
 AZURE_OPENAI_API_VERSION = "2024-12-01-preview"
-PGVECTOR_CONN = "postgresql://user:password@localhost:5432/mydatabase"
+PGVECTOR_CONN = "postgresql://postgres:proplusV!4@localhost:5432/zenai-dev"
 COLLECTION_NAME = "pdf_chunks"
 
-mcp_server = MCPServer("pdf_analytics_server")
 
 if "vectorstore" not in st.session_state:
     st.session_state["vectorstore"] = None
@@ -99,7 +99,11 @@ if user_query and st.session_state["vectorstore"]:
     st.write("**Analytics Report:**")
     st.json(report)
 
-@expose_tool(mcp_server, name="get_pdf_analytics", description="Get analytics report for PDFs based on a query")
+
+mcp = FastMCP("pdf_analytics_server") 
+
+
+@mcp.tool("get_pdf_analytics")
 def get_pdf_analytics(query: str = ""):
     if not st.session_state["vectorstore"]:
         return {"error": "No documents loaded."}
@@ -114,16 +118,9 @@ def get_pdf_analytics(query: str = ""):
     st.session_state["last_report"] = report
     return report
 
-def run_mcp():
-    asyncio.run(mcp_server.serve_stdio())
-if "mcp_thread" not in st.session_state:
-    mcp_thread = threading.Thread(target=run_mcp, daemon=True)
-    mcp_thread.start()
-    st.session_state["mcp_thread"] = mcp_thread
-
 st.markdown("---")
 st.info(
-    "This app acts as an MCP server. "
-    "The `get_pdf_analytics` tool returns analytics for a given query over the uploaded PDFs. "
-    "Efficient chunking and disk buffering support large file processing."
+    '''DRL Rag MCP Server for PDF Analytics \n,
+    The `get_pdf_analytics` tool returns analytics for a given query over the uploaded PDFs \nc. 
+    Efficient chunking and disk buffering support large file processing.'''
 )
