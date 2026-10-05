@@ -1,4 +1,4 @@
-import streamlit as st
+﻿import streamlit as st
 import os
 import threading
 import asyncio
@@ -18,11 +18,11 @@ rate_limiter = InMemoryRateLimiter(
 
 
 # ==== Azure OpenAI Configuration ====
-AZURE_OPENAI_API_KEY = "BU21ep2zab4JWbBEUOstRuNiz5vVb4IJO0VFsdnqtW0hb2UX5TokJQQJ99BAACHYHv6XJ3w3AAABACOGCIXn"
-AZURE_OPENAI_ENDPOINT = "https://chatdrl-gpt.openai.azure.com/"
+AZURE_OPENAI_API_KEY = os.environ["AZURE_OPENAI_API_KEY"]
+AZURE_OPENAI_ENDPOINT = os.environ["AZURE_OPENAI_ENDPOINT"]
 AZURE_OPENAI_DEPLOYMENT_NAME = "gpt-4.1"
 AZURE_OPENAI_API_VERSION = "2024-12-01-preview"
-PGVECTOR_CONN = "postgresql://postgres:proplusV!4@localhost:5432/zenai-dev"
+PGVECTOR_CONN = os.environ["PGVECTOR_CONN"]
 COLLECTION_NAME = "pdf_chunks"
 
 
@@ -56,10 +56,10 @@ if uploaded_files:
     st.session_state["chunks"] = chunks
     st.info(f"Chunked into {len(chunks)} segments.")
     
-    embeddings_endpoint = "https://chatdrl-gpt.openai.azure.com/"
+    embeddings_endpoint = os.environ["AZURE_OPENAI_ENDPOINT"]
     embeddings_model_name = "text-embedding-3-large"
     embeddingsDeployment = "text-embedding-3-large"
-    embeddings_api_key = "BU21ep2zab4JWbBEUOstRuNiz5vVb4IJO0VFsdnqtW0hb2UX5TokJQQJ99BAACHYHv6XJ3w3AAABACOGCIXn"
+    embeddings_api_key = os.environ["AZURE_OPENAI_API_KEY"]
     embeddings_api_version = "2024-02-01"
 
     # Embeddings and vectorstore (Azure OpenAI)
@@ -140,3 +140,4 @@ st.info(
     The `get_pdf_analytics` tool returns analytics for a given query over the uploaded PDFs \nc. 
     Efficient chunking and disk buffering support large file processing.'''
 )
+

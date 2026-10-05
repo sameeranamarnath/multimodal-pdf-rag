@@ -25,12 +25,13 @@ app.add_middleware(
 ) 
 
 # Manually parsed the .env file and populate os.environ to get the Lever API key
-with open(".env", encoding="utf-8") as f:
-    for line in f:
-        line = line.strip()
-        if line and not line.startswith("#"):
-            key, value = line.split("=", maxsplit=1)
-            os.environ[key] = value.strip('"')
+if os.path.exists(".env"):
+    with open(".env", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith("#"):
+                key, value = line.split("=", maxsplit=1)
+                os.environ[key] = value.strip('"')
 
 
 # Environment variables (set these securely in your environment)  

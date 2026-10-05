@@ -1,1 +1,23 @@
-node_modules
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node / React
+node_modules/
+build/
+dist/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
+
+# Logs
+*.log
